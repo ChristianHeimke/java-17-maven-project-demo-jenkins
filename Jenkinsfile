@@ -14,8 +14,14 @@ pipeline {
         }
         stage('Release') {
             steps {
-              sh "docker build -t christianheimke/java-17-demo:${BUILD_NUMBER} ."
-              archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+              withCredentials([usernamePassword(credentialsId: 'dockerhubcredentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                sh '''
+                docker login -u $USERNAME -p $PASSWORD
+                docker build -t christianheimke/java-17-demo:${BUILD_NUMBER} ."
+                docker push christianheimke/java-17-demo:${BUILD_NUMBER}
+                '''
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+              }
             }
         }
     }
